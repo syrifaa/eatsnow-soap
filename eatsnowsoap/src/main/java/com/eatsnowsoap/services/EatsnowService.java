@@ -3,12 +3,13 @@ package com.eatsnowsoap.services;
 import com.sun.net.httpserver.HttpExchange;
 import javax.annotation.Resource;
 import javax.jws.WebService;
+import javax.jws.WebMethod;
 import javax.xml.ws.WebServiceContext;
 import javax.xml.ws.handler.MessageContext;
 import java.sql.*;
 import java.text.SimpleDateFormat;
 
-
+import com.eatsnowsoap.core.Database;
 
 @WebService
 public class EatsnowService {
@@ -45,4 +46,39 @@ public class EatsnowService {
         }
     }
 
+    @WebMethod
+    public String addReview(String content, Float rating, Integer id_user, String name_user, String profile_img, Integer restaurant_id) {
+        if (!isKeyValid()) {
+            String message = "API Key tidak valid";
+            return message;
+        }
+        Database db = new Database();
+        Connection connection = db.getConnection();
+        try {
+            if (connection != null) {
+                String query = "INSERT INTO review (content, rating, id_user, name_user, profile_img, id_restaurant) VALUES (?, ?, ?, ?, ?, ?)";
+
+                try (PreparedStatement preparedQueryStatement = connection.prepareStatement(query)) {
+                    preparedQueryStatement.setString(1, content);
+                    preparedQueryStatement.setFloat(2, rating);
+                    preparedQueryStatement.setInt(3, id_user);
+                    preparedQueryStatement.setString(4, name_user);
+                    preparedQueryStatement.setString(5, profile_img);
+                    preparedQueryStatement.setInt(6, restaurant_id);
+
+                    preparedQueryStatement.executeUpdate();
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            String message = "Kesalahan saat menambahkan review : " + e.getMessage();
+            log(message);
+            return message;
+        } finally {
+            db.closeConnection(connection);
+        }
+        String message = "Berhasil menambahkan review";
+        log(message);
+        return message;
+    }
 }
