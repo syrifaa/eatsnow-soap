@@ -1,0 +1,18 @@
+version: '3'
+services:
+  soap-db:
+    image: mysql:latest
+    ports:
+      - "3307:3306"
+    volumes:
+      - ./db:/docker-entrypoint-initdb.d
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: eatsnow-soap-service
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+  soap-app:
+    build: .
+    image: app:latest
+    ports:
+      - "8020:8020"
