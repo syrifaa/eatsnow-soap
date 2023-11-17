@@ -47,7 +47,7 @@ public class EatsnowService {
     }
 
     @WebMethod
-    public String addReview(String content, Float rating, Integer id_user, String name_user, String profile_img, Integer restaurant_id) {
+    public String addReview(String content, Float rating, String email, String name_user, String profile_img, Integer restaurant_id) {
         if (!isKeyValid()) {
             String message = "API Key tidak valid";
             return message;
@@ -56,12 +56,12 @@ public class EatsnowService {
         Connection connection = db.getConnection();
         try {
             if (connection != null) {
-                String query = "INSERT INTO review (content, rating, id_user, name_user, profile_img, id_restaurant) VALUES (?, ?, ?, ?, ?, ?)";
+                String query = "INSERT INTO review (content, rating, email, name_user, profile_img, id_restaurant) VALUES (?, ?, ?, ?, ?, ?)";
 
                 try (PreparedStatement preparedQueryStatement = connection.prepareStatement(query)) {
                     preparedQueryStatement.setString(1, content);
                     preparedQueryStatement.setFloat(2, rating);
-                    preparedQueryStatement.setInt(3, id_user);
+                    preparedQueryStatement.setString(3, email);
                     preparedQueryStatement.setString(4, name_user);
                     preparedQueryStatement.setString(5, profile_img);
                     preparedQueryStatement.setInt(6, restaurant_id);
@@ -81,4 +81,130 @@ public class EatsnowService {
         log(message);
         return message;
     }
+
+    @WebMethod
+    public String getReview(Integer id_restaurant) {
+        if (!isKeyValid()) {
+            String message = "API Key tidak valid";
+            return message;
+        }
+        String message;
+        Database db = new Database();
+        Connection connection = db.getConnection();
+        try {
+            if (connection != null) {
+                String query = "SELECT * FROM review WHERE id_restaurant = ?";
+
+                try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+                    preparedStatement.setInt(1, id_restaurant);
+                    ResultSet resultSet = preparedStatement.executeQuery();
+                    Boolean hasil = false;
+                    message = "{\"hasil\": [";
+
+                    while (resultSet.next()) {
+                        message += "{\"content\": \"" + resultSet.getString("content") + "\", \"rating\": " + resultSet.getString("rating") + ", \"email\": \"" + resultSet.getString("email") + "\", \"name_user\": \"" + resultSet.getString("name_user") + "\", \"profile_img\": \"" + resultSet.getString("profile_img") + "\", \"id_restaurant\": " + resultSet.getString("id_restaurant") + "},";
+                        hasil = true;
+                    }
+                    message = message.substring(0, message.length() - 1);
+                    message += "]}";
+
+                    if (!hasil) {
+                        log("Berhasil mengambil review, data hasil kosong");
+                        message = "{\"hasil\": []}";
+                    } else {
+                        log("Berhasil mengambil review");
+                    }
+                    return message;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            message = "Kesalahan saat mengambil review : " + e.getMessage();
+            log(message);
+            return message;
+        }
+        db.closeConnection(connection);
+        return "Database tidak dapat diakses";
+    }
+
+    @WebMethod
+    public String getUserReview(String email){
+        if (!isKeyValid()) {
+            String message = "API Key tidak valid";
+            return message;
+        }
+        String message;
+        Database db = new Database();
+        Connection connection = db.getConnection();
+        try {
+            if (connection != null) {
+                String query = "SELECT * FROM review WHERE email = ?";
+
+                try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+                    preparedStatement.setString(1, email);
+                    ResultSet resultSet = preparedStatement.executeQuery();
+                    Boolean hasil = false;
+                    message = "{\"hasil\": [";
+
+                    while (resultSet.next()) {
+                        message += "{\"content\": \"" + resultSet.getString("content") + "\", \"rating\": " + resultSet.getString("rating") + ", \"email\": \"" + resultSet.getString("email") + "\", \"name_user\": \"" + resultSet.getString("name_user") + "\", \"profile_img\": \"" + resultSet.getString("profile_img") + "\", \"id_restaurant\": " + resultSet.getString("id_restaurant") + "},";
+                        hasil = true;
+                    }
+                    message = message.substring(0, message.length() - 1);
+                    message += "]}";
+
+                    if (!hasil) {
+                        log("Berhasil mengambil review, data hasil kosong");
+                        message = "{\"hasil\": []}";
+                    } else {
+                        log("Berhasil mengambil review");
+                    }
+                    return message;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            message = "Kesalahan saat mengambil review : " + e.getMessage();
+            log(message);
+            return message;
+        }
+        db.closeConnection(connection);
+        return "Database tidak dapat diakses";
+
+    }
+
+    @WebMethod
+    public String updateReview(Integer review_id, String content, Float rating){
+        if(!isKeyValid()){
+            String message = "API Key tidak valid";
+            return message;
+        }
+        Database db = new Database();
+        Connection connection = db.getConnection();
+        try {
+            if (connection != null) {
+                String query = "UPDATE review SET content = ?, rating = ? WHERE review_id = ?";
+                // String query = "INSERT INTO review (content, rating, email, name_user, profile_img, id_restaurant) VALUES (?, ?, ?, ?, ?, ?)";
+
+                try (PreparedStatement preparedQueryStatement = connection.prepareStatement(query)) {
+                    preparedQueryStatement.setString(1, content);
+                    preparedQueryStatement.setFloat(2, rating);
+                    preparedQueryStatement.setInt(3, review_id);
+
+                    preparedQueryStatement.executeUpdate();
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            String message = "Kesalahan saat menambahkan review : " + e.getMessage();
+            log(message);
+            return message;
+        } finally {
+            db.closeConnection(connection);
+        }
+        String message = "Berhasil mengubah review dengan id" + review_id;
+        log(message);
+        return message;
+    }
+
 }
