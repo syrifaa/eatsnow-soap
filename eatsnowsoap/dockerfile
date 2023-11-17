@@ -5,8 +5,10 @@ WORKDIR /app
 COPY src ./src
 COPY pom.xml .
 COPY target ./target
-COPY .env /app/.env
+COPY .env .
 
 RUN mvn clean install -X
+
+EXPOSE 8020
 
 CMD ["mvn", "exec:java"]

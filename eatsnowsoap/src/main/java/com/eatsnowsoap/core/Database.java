@@ -8,8 +8,8 @@ public class Database {
     private Connection connection;
     private Dotenv dotenv = Dotenv.load();
     private String DB_URL = dotenv.get("DB_URL");
-    private String DB_USER = dotenv.get("DB_USER");
-    private String DB_PASS = dotenv.get("DB_PASS");
+    private String DB_USER = dotenv.get("MYSQL_USER");
+    private String DB_PASS = dotenv.get("MYSQL_PASSWORD");
 
     public Database(){
         try{
